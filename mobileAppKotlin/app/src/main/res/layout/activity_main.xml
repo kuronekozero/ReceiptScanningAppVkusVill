@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
+
     <Button
         android:id="@+id/button"
         android:layout_width="wrap_content"
@@ -11,6 +12,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:text="Take a Photo" />
+
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="fill_parent"
@@ -18,9 +20,39 @@
         android:layout_above="@+id/button"
         android:layout_alignParentTop="true" />
 
+
     <CheckBox
         android:id="@+id/deletePhotosCheckBox"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/button"
         android:text="Удалять фотографии с устройства" />
+
+    <AutoCompleteTextView
+        android:id="@+id/autoCompleteTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/deletePhotosCheckBox"
+        android:hint="Введите нежелательные ингредиенты" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/autoCompleteTextView"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="61dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Выбранные ингредиенты"
+            android:textSize="18sp" />
+
+        <ListView
+            android:id="@+id/selectedIngredientsListView"
+            android:layout_width="match_parent"
+            android:layout_height="464dp" />
+    </LinearLayout>
+
 </RelativeLayout>

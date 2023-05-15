@@ -1,7 +1,6 @@
 import pandas as pd
 from fuzzywuzzy import fuzz
 
-
 def match_products(recognized_text: str, excel_file_path: str, first_words_file_path: str) -> pd.DataFrame:
     # Загружаем данные из файла Excel в DataFrame
     products_df = pd.read_excel(excel_file_path)

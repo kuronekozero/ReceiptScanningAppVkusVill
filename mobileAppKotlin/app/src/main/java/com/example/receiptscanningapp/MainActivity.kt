@@ -1,15 +1,17 @@
 package com.example.receiptscanningapp
 
 import okhttp3.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import java.lang.Class
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import java.io.File
 import androidx.core.content.FileProvider
-import java.io.ByteArrayOutputStream
-import java.io.IOException
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -18,9 +20,10 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.ImageView
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -28,10 +31,13 @@ import com.google.gson.reflect.TypeToken
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 class MainActivity : AppCompatActivity() {
+    private val selectedIngredients = ArrayList<String>()
+    private lateinit var autoCompleteTextView: AutoCompleteTextView
     private val cameraRequest = 1888
     lateinit var imageView: ImageView
     lateinit var photoFile: File
@@ -56,6 +62,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val selectedIngredientsAdapter = SelectedIngredientsAdapter(this, selectedIngredients)
+        val selectedIngredientsListView = findViewById<ListView>(R.id.selectedIngredientsListView)
+        selectedIngredientsListView.adapter = selectedIngredientsAdapter
+
+        autoCompleteTextView = findViewById(R.id.autoCompleteTextView)
         title = "KotlinApp"
         if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.CAMERA)
             == PackageManager.PERMISSION_DENIED)
@@ -77,9 +89,43 @@ class MainActivity : AppCompatActivity() {
         deletePhotosCheckBox.setOnCheckedChangeListener { _, isChecked ->
             deletePhotos = isChecked
         }
+
+        // Чтение CSV-файла
+        val inputStream = assets.open("ingredientsList.csv")
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val ingredients = ArrayList<String>()
+        var line = reader.readLine()
+        while (line != null) {
+            ingredients.add(line)
+            line = reader.readLine()
+        }
+
+        Log.d("MainActivity", "Ingredients: $ingredients")
+
+        val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, ingredients)
+        autoCompleteTextView.setAdapter(adapter)
+
+        // Сохранение выбранных пользователем ингредиентов
+        autoCompleteTextView.setOnItemClickListener { _, _, position, _ ->
+            val selectedIngredient = adapter.getItem(position) as String
+            selectedIngredients.add(selectedIngredient)
+            selectedIngredientsAdapter.notifyDataSetChanged()
+
+            // Сохранение списка в SharedPreferences
+            val sharedPreferences = getPreferences(Context.MODE_PRIVATE)
+            val editor = sharedPreferences.edit()
+            editor.putStringSet("selectedIngredients", HashSet(selectedIngredients))
+            editor.apply()
+        }
+
+        // Загрузка списка из SharedPreferences
+        val sharedPreferences = getPreferences(Context.MODE_PRIVATE)
+        val savedIngredients = sharedPreferences.getStringSet("selectedIngredients", null)
+        if (savedIngredients != null) {
+            selectedIngredients.addAll(savedIngredients)
+        }
     }
 
-    @Deprecated("Use registerForActivityResult instead")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == cameraRequest && resultCode == Activity.RESULT_OK) {
@@ -101,6 +147,7 @@ class MainActivity : AppCompatActivity() {
                                 bitmapToByteArray(photo)
                             )
                         )
+                        .addFormDataPart("ingredients", Gson().toJson(selectedIngredients))
                         .build()
                     val request = Request.Builder()
                         .url("http://192.168.0.107:5000/upload")
@@ -125,9 +172,6 @@ class MainActivity : AppCompatActivity() {
                             val products = Gson().fromJson<List<Product>>(responseData, productsType)
                             intent.putParcelableArrayListExtra("products", ArrayList(products))
                             startActivity(intent)
-
-                            // Вывод строки с данными от сервера в консоль Logcat
-                            Log.i("MainActivity", "Response from server: $responseData")
 
                             // Преобразование строки в массив JSON с помощью класса JSONArray
                             val jsonArray = JSONArray(responseData)
@@ -171,5 +215,26 @@ class MainActivity : AppCompatActivity() {
                 Log.e("MainActivity", "Failed to open input stream for photoURI")
             }
         }
+    }
+}
+
+class SelectedIngredientsAdapter(context: Context, private val selectedIngredients: MutableList<String>) :
+    ArrayAdapter<String>(context, R.layout.selected_ingredient_item, selectedIngredients) {
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.selected_ingredient_item, parent, false)
+
+        val ingredientNameTextView = view.findViewById<TextView>(R.id.ingredientNameTextView)
+        val deleteIngredientButton = view.findViewById<ImageButton>(R.id.deleteIngredientButton)
+
+        val ingredient = selectedIngredients[position]
+        ingredientNameTextView.text = ingredient
+
+        deleteIngredientButton.setOnClickListener {
+            selectedIngredients.removeAt(position)
+            notifyDataSetChanged()
+        }
+
+        return view
     }
 }
