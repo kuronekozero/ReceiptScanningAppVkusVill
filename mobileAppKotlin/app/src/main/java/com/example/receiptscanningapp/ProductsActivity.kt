@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import android.os.Parcel
 import android.os.Parcelable
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.gson.annotations.SerializedName
 import java.util.*
@@ -36,6 +38,8 @@ class ProductsActivity : AppCompatActivity() {
 }
 
 data class Product(
+    @SerializedName("Аллерген")
+    val allergen: String,
     @SerializedName("Название")
     val name: String,
     @SerializedName("Белки")
@@ -48,8 +52,10 @@ data class Product(
     val energyValue: String,
     @SerializedName("Состав")
     val composition: String
+
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
@@ -59,6 +65,7 @@ data class Product(
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(allergen)
         parcel.writeString(name)
         parcel.writeString(proteins)
         parcel.writeString(fats)
@@ -110,22 +117,13 @@ class ProductsAdapter(
         holder.fatsTextView.text = "Жиры: ${product.fats}"
         holder.carbohydratesTextView.text = "Углеводы: ${product.carbohydrates}"
 
-// Проверка наличия выбранных пользователем ингредиентов в составе продукта
-/*        var containsSelectedIngredient = false
-        for (ingredient in selectedIngredients) {
-            if (product.composition.indexOf(ingredient) != -1) {
-                containsSelectedIngredient = true
-                break
-            }
-        }
-
-        if (containsSelectedIngredient) {
-            // Изменение фона элемента списка на красный цвет
-            holder.itemView.setBackgroundColor(Color.parseColor("#FFCDD2"))
+        if (product.allergen == "Да") {
+            Log.d("ProductsAdapter", "Changing background color for product: ${product.name}")
+            holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.red))
         } else {
-            // Сброс фона элемента списка на цвет по умолчанию
+            Log.d("ProductsAdapter", "Product allergen: ${product.allergen}")
             holder.itemView.setBackgroundColor(Color.TRANSPARENT)
-        }*/
+        }
     }
 
     override fun getItemCount(): Int {

@@ -184,7 +184,7 @@ class MainActivity : AppCompatActivity() {
                                 if (json.has("someKey")) {
                                     // Ключ "someKey" присутствует в объекте JSON
                                     val someData = json.getString("someKey")
-                                    Log.i("MainActivity", "Received data from server: $someData")
+                                    //Log.i("MainActivity", "Received data from server: $someData")
                                     // Обработка данных
                                 } else {
                                     // Ключ "someKey" отсутствует в объекте JSON
@@ -194,7 +194,7 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             // Обработка ответа
-                            Log.i("MainActivity", "Response from server: $responseData")
+                            //Log.i("MainActivity", "Response from server: $responseData")
                             Log.i("MainActivity", "Delete photos: $deletePhotos")
                             if (deletePhotos) {
                                 val deleted = photoFile.delete()
