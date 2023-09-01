@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
                         .addFormDataPart("ingredients", Gson().toJson(selectedIngredients))
                         .build()
                     val request = Request.Builder()
-                        .url("http://192.168.0.107:5000/upload")
+                        .url("") // paste your server adress in here
                         .post(requestBody)
                         .build()
 
