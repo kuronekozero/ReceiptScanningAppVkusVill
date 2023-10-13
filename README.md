@@ -1,4 +1,4 @@
-# ReceiptScanningApp
+<h1 align="center">ReceiptScanningApp</h1>
 
 This project is a mobile application for Android platform that allows people with allergies to quickly determine which products they can consume and which ones they should avoid. The application analyzes a photo of a grocery receipt from the VkusVill supermarket chain and identifies any potentially harmful ingredients in the purchased products.
 
