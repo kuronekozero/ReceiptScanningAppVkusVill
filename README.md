@@ -46,6 +46,8 @@ This image processing workflow enables users to quickly and conveniently determi
 3. Build and install the app on your device or emulator.
 4. Launch the app and follow the on-screen instructions.
 
+And if you really want to run this app you'll also need an API key for Google Cloud Vision. You can get one for 3 month for free. 
+
 ## License
 
 This project is licensed under the MIT License.
